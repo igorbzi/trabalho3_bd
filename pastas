@@ -1,0 +1,9 @@
+cd /
+sudo mkdir tablespc
+cd tablespc
+sudo mkdir tbspc01
+sudo mkdir tbspc02
+cd /
+chown postgres.postgres /tablespc
+chown postgres.postgres /tablespc/tbspc01
+chown postgres.postgres /tablespc/tbspc02
