@@ -18,7 +18,7 @@ CREATE TABLE sale_item (
   CONSTRAINT fk_sale_item_product FOREIGN KEY (pid) REFERENCES product(pid)
 );
 
-CREATE OR REPLACE TABLE log_sale_item(
+CREATE TABLE log_sale_item(
   op varchar(6) not null,
   pid integer not null,
   sid integer not null,
