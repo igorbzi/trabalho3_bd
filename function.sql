@@ -38,22 +38,18 @@ begin
     select array_agg(sid) into array_sale from sale;
     select count(sid) into qt_sale from sale;
 
-
-
-    -- executa qttup vezes
     loop
-        -- seleciona um sid
+
         nprod := itBySale[(random()*5)::int+1];  
         sale_item_tup.sid := array_sale[(random()*(qt_sale-1))::int+1];
 
-            --executa nprod vezes (vindo de itBySale)
             loop
-                -- seleciona um pid e um sqty
+
                 sale_item_tup.pid := array_prod[(random()*(qt_prod-1))::int+1];
                 sale_item_tup.sqty := (random()*1000)::int;
-                
+
                 raise notice 'sale item: %', sale_item_tup;
-                -- insere em sale item
+
                 
                 if (not exists (select 1 from sale_item where sid=sale_item_tup.sid and pid=sale_item_tup.pid))
                     then
@@ -79,8 +75,9 @@ declare
    counter int:=0;
    stock int[5]:='{3,5,8,10,15}';
 begin
+
    raise notice 'Range ids: %',100*qttup;
-   -- Or stock:=Array[3,5,8,10,15];
+
    loop
       prd_tup.pid:=(random()*100*qttup)::int;
       prd_tup.name:=left(MD5(random()::text),20);
@@ -95,7 +92,6 @@ begin
    end loop;
 end; $$;
 
---
 create or replace procedure ins_sale(qttup int ) Language plpgsql
 as $$
 declare
@@ -116,6 +112,7 @@ begin
       exit when counter >= qttup;
    end loop;
 end; $$;
+
 
 create or replace procedure call_all (qtsale int, qtprod int, qtitem int) language plpgsql
 as $$
