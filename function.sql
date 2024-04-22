@@ -38,24 +38,21 @@ begin
     select array_agg(sid) into array_sale from sale;
     select count(sid) into qt_sale from sale;
 
-    nprod := itBySale[(random()*6)::int+1];
 
 
     -- executa qttup vezes
     loop
         -- seleciona um sid
-        sale_item_tup.sid := array_sale[(random()*qt_sale)::int+1];
-
-        -- impede que tente inserir em uma sale ja existente
-        if (not exists(select 1 from sale_item where sid=sale_item_tup.sid))
-            then
+        nprod := itBySale[(random()*5)::int+1];  
+        sale_item_tup.sid := array_sale[(random()*(qt_sale-1))::int+1];
 
             --executa nprod vezes (vindo de itBySale)
             loop
                 -- seleciona um pid e um sqty
-                sale_item_tup.pid := array_prod[(random()*qt_prod)::int+1];
+                sale_item_tup.pid := array_prod[(random()*(qt_prod-1))::int+1];
                 sale_item_tup.sqty := (random()*1000)::int;
-
+                
+                raise notice 'sale item: %', sale_item_tup;
                 -- insere em sale item
                 
                 if (not exists (select 1 from sale_item where sid=sale_item_tup.sid and pid=sale_item_tup.pid))
@@ -67,11 +64,10 @@ begin
                 exit when counter_nprod > nprod;
             end loop;
 
-            counter := counter +1;4
-
-        end if;
+            counter := counter +1;
 
         exit when counter >= qttup;
+        
     end loop;
 
 end; $$;
@@ -124,7 +120,7 @@ end; $$;
 create or replace procedure call_all (qtsale int, qtprod int, qtitem int) language plpgsql
 as $$
 begin
-   perform ins_product(qtprod);
-   perform ins_sale(qtsale);
-   perform ins_sale_item(qtitem);
+   call ins_product(qtprod);
+   call ins_sale(qtsale);
+   call ins_sale_item(qtitem);
 end; $$;
