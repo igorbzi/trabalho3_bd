@@ -1,3 +1,23 @@
+CREATE TABLE product (					
+	pid integer not null primary key,				
+	name varchar(30) not null,					
+	pqty  integer not null);
+
+CREATE TABLE sale (
+   sid integer not null primary key,
+   sdate date not null,
+   address varchar(30));
+   
+CREATE TABLE sale_item (
+	sid integer not null,
+	pid integer not null,
+	sqty integer not null,
+	CONSTRAINT pk_sale_item PRIMARY KEY (sid,pid),
+	CONSTRAINT fk_sale_item_sale FOREIGN KEY (sid) REFERENCES sale(sid),
+	CONSTRAINT fk_sale_item_product FOREIGN KEY (pid) REFERENCES product(pid)
+);
+
+
 create or replace procedure ins_sale_item (qttup int) language plpgsql
 as $$
 declare
@@ -56,27 +76,6 @@ begin
 
 end; $$;
 
-
-
-CREATE TABLE product (					
-	pid integer not null primary key,				
-	name varchar(30) not null,					
-	pqty  integer not null);
-
-CREATE TABLE sale (
-   sid integer not null primary key,
-   sdate date not null,
-   address varchar(30));
-   
-CREATE TABLE sale_item (
-	sid integer not null,
-	pid integer not null,
-	sqty integer not null,
-	CONSTRAINT pk_sale_item PRIMARY KEY (sid,pid),
-	CONSTRAINT fk_sale_item_sale FOREIGN KEY (sid) REFERENCES sale(sid),
-	CONSTRAINT fk_sale_item_product FOREIGN KEY (pid) REFERENCES product(pid)
-);
-
 create or replace procedure ins_product(qttup int ) Language plpgsql
 as $$
 declare
@@ -111,25 +110,15 @@ begin
    loop
       sale_tup.sid:=(random()*100*qttup)::int;
       sale_tup.sdate:='2023-01-01 00:00:00'::timestamp + random()*(now()-timestamp '2023-01-01 00:00:00');
+      sale_tup.address:=left(MD5(random()::text),30);
       raise notice 'Sale: %',sale_tup;
       if (not exists (select 1 from sale where sid=sale_tup.sid))
       then
-        insert into sale (sid,sdate) values (sale_tup.sid,sale_tup.sdate);
+        insert into sale (sid,sdate, address) values (sale_tup.sid,sale_tup.sdate, sale_tup.address);
         counter:=counter+1;
       end if;
       exit when counter >= qttup;
    end loop;
-end; $$;
-
-create or replace procedure ins_sale_item (qttup int) language plpgsql
-as $$
-declare
-  itBySale int[6]:='{2,4,7,8,9,10}';
-begin
-  -- Pick one of the values from itBySale, say n, query sale, 
-  -- take the id, and query product and take n IDs to insert into item_sale 
-  -- (do not forget to get a value for sqty as well)
-  -- repeat that qttup times
 end; $$;
 
 create or replace procedure call_all (qtsale int, qtprod int, qtitem int) language plpgsql
