@@ -24,6 +24,7 @@ begin
         sale_item_tup.sid := array_sale[(random()*(qt_sale-1))::int+1];
 
             loop
+ 5. Execute o arquivo tables.sql;
 
                 sale_item_tup.pid := array_prod[(random()*(qt_prod-1))::int+1];
                 sale_item_tup.sqty := (random()*1000)::int;
@@ -101,3 +102,25 @@ begin
    call ins_sale(qtsale);
    call ins_sale_item(qtitem);
 end; $$;
+
+CREATE OR REPLACE FUNCTION sale_item_log() RETURNS TRIGGER AS $$
+  DECLARE 
+  BEGIN
+    if (TG_OP = 'UPDATE') then
+
+      INSERT INTO log_sale_item values (TG_OP, OLD.pid, OLD.sid, OLD.sqty, NEW.sqty, current_timestamp, current_user);
+
+    elsif (TG_OP = 'DELETE') then
+
+      INSERT INTO log_sale_item(op, pid, sid, old_qt, dt_op, usuario) values (TG_OP, OLD.pid, OLD.sid, OLD.sqty, current_timestamp, current_user);
+
+    end if;
+
+    RETURN NEW;
+
+  END;
+
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER sale_item_log AFTER UPDATE OR DELETE ON sale_item
+FOR EACH ROW EXECUTE FUNCTION sale_item_log();
